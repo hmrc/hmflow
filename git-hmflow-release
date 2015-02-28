@@ -1,0 +1,52 @@
+#!/bin/bash
+
+source $(dirname $0)/githmflow-common
+
+help() {
+    echo "usage:"
+    echo "  git hmrcflow release [list]"
+    echo "  git hmrcflow release create <release-name>"
+    echo "  git hmrcflow release push [<release-name>]"
+    echo "  git hmrcflow release create-push <release-name>"
+}
+
+list() {
+    [[ $# != 0 ]] && warn "list doesn't take any arguments" && exit 1
+    list_type_of_branch release
+}
+
+create() {
+    [[ $# != 1 ]] && warn "you need to supply a release name" && exit 1
+    git tag -a -m "release $1" release/$1
+}
+
+push() {
+    [[ $# != 0 && $# != 1 ]] && warn "you need to supply a release name" && exit 1
+    if [[ $1 ]]; then
+        RELEASE=$1
+    else
+        RELEASES_AGAINST_COMMIT=$(git tag --contains $(current_commit) | grep "^release/")
+        [[ $(echo $RELEASES_AGAINST_COMMIT | wc -l) > 1 ]] && warn "multiple releases found against this commit" && exit 1
+        [[ ! $RELEASES_AGAINST_COMMIT ]] && warn "no releases found against this commit" && exit 1
+        RELEASE=$(branch_suffix $RELEASES_AGAINST_COMMIT)
+        echo "$RELEASES_AGAINST_COMMIT"
+    fi
+    git push origin release/$RELEASE
+}
+
+create_push() {
+    create $@ &&
+    push $@
+}
+
+main() {
+    if [[ $# -lt 1 ]]; then
+        CMD=list
+    else
+        CMD=$(echo $1 | sed 's/-/_/g'); shift
+    fi
+
+    $CMD $@
+}
+
+main "$@"

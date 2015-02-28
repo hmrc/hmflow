@@ -1,0 +1,78 @@
+#!/bin/bash
+
+source $(dirname $0)/githmflow-common
+
+help() {
+    echo "usage:"
+    echo "  git hmrcflow feature [list]"
+    echo "  git hmrcflow feature start <feature-name>"
+    echo "  git hmrcflow feature push"
+    echo "  git hmrcflow feature checkout <feature-name>"
+    echo "  git hmrcflow feature cancel"
+    echo "  git hmrcflow feature finish"
+}
+
+list() {
+    [[ $# != 0 ]] && warn "list doesn't take any arguments" && exit 1
+    list_type_of_branch feature
+}
+
+start() {
+    [[ $# != 1 ]] && warn "you need to supply a feature name" && exit 1
+    FEATURE=$1
+    git checkout -b feature/$FEATURE
+}
+
+push() {
+    [[ $# != 0 ]] && warn "push doesn't take any arguments" && exit 1
+    on_a_feature_branch_with_warn_for_action push || exit 1
+    BRANCH=$(current_branch)
+    on_a_feature_branch_with_warn_for_action "push" || exit 1
+    git push $(current_branch_remote >/dev/null || echo "--set-upstream") origin $BRANCH
+}
+
+checkout() {
+    [[ $# != 1 ]] && warn "checkout requires a feature name" && exit 1
+    git checkout feature/$1
+}
+
+finish() {
+    # Finished means merged into master
+    [[ $# != 0 ]] && warn "finish doesn't take any arguments" && exit 1
+    on_a_feature_branch_with_warn_for_action "finish" || exit 1
+    BRANCH=$(current_branch)
+    FEATURE=$(branch_suffix $BRANCH)
+    if ! git branch --merged master | grep $BRANCH &>/dev/null; then
+        warn "Feature $FEATURE hasn't been merged to master, can't finish"
+        exit 1
+    fi
+    git checkout master
+    git branch -D $BRANCH
+}
+
+cancel() {
+    [[ $# != 0 ]] && warn "cancel doesn't take any arguments" && exit 1
+    on_a_feature_branch_with_warn_for_action "cancel" || exit 1
+    BRANCH=$(current_branch)
+    git checkout master
+    git branch -D $BRANCH
+}
+
+on_a_feature_branch_with_warn_for_action() {
+    ACTION=$1
+    BRANCH=$(current_branch)
+    BRANCH_PREFIX=$(branch_prefix $BRANCH)
+    [[ $BRANCH_PREFIX != "feature" ]] && warn "you need to be on a feature branch to $ACTION" && exit 1 || true
+}
+
+main() {
+    if [[ $# -lt 1 ]]; then
+        CMD=list
+    else
+        CMD=$1; shift
+    fi
+
+    $CMD $@
+}
+
+main "$@"

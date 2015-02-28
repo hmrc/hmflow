@@ -1,0 +1,23 @@
+#!/bin/bash
+
+usage() {
+    echo "usage:"
+    echo "  git hmflow feature <command> [options]"
+    echo "  git hmflow release <command> [options]"
+    echo "  git hmflow hotfix <command> [options]"
+    echo "  git hmflow version <command> [options]"
+    echo "  git hmflow <command> help"
+    echo
+}
+
+main() {
+    if [[ $# -lt 1 ]]; then
+        usage
+        exit 1
+    fi
+
+    COMMAND="$1"; shift
+    git hmflow-${COMMAND} $@
+}
+
+main "$@"

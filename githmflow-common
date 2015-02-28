@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e
+
+warn() {
+    echo "$@" >&2;
+}
+
+#set_branch_env() {
+#    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+#    COMMIT=$(git rev-parse --short HEAD)
+#    REMOTE=$(git config --get branch.master.remote)
+#}
+
+current_commit() {
+    git rev-parse --short HEAD
+}
+
+current_branch_remote() {
+    # What heppens if there's two remotes? Is that a thing?
+    git config --get branch.$(current_branch).remote
+}
+
+branch_exists() {
+    BRANCH=$1
+    git branch | grep "^..${BRANCH}$"
+}
+
+current_branch() {
+    git rev-parse --abbrev-ref HEAD | grep -v HEAD
+}
+
+branch_prefix() {
+    BRANCH=$1
+    echo $BRANCH | cut -f 1 -d '/'
+}
+
+branch_suffix() {
+    BRANCH=$1
+    echo $BRANCH | cut -f 2- -d '/'
+}
+
+list_type_of_branch() {
+    TYPE=$1
+    git branch | grep "[* ] ${TYPE}/" | sed "s/\(..\)${TYPE}\/\(.*\)/\1\2/"
+}

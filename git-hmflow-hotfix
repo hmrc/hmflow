@@ -1,0 +1,125 @@
+#!/bin/bash
+
+source $(dirname $0)/githmflow-common
+
+help() {
+    echo "usage:"
+    echo "  git hmrcflow hotfix [list]"
+    echo "  git hmrcflow hotfix start <release>"
+    echo "  git hmrcflow hotfix push"
+
+    echo "  git hmrcflow hotfix checkout <hotfix-name>"
+    echo "  git hmrcflow hotfix cancel"
+    echo "  git hmrcflow hotfix pull"
+    echo "  git hmrcflow hotfix release <new-release>"
+    echo "  git hmrcflow hotfix finish"
+}
+
+list() {
+    [[ $# != 0 ]] && warn "list doesn't take any arguments" && exit 1
+    list_type_of_branch hotfix
+}
+
+start() {
+    [[ $# != 1 ]] && warn "you need to supply a release name to hotfix" && exit 1
+    RELEASE=$1
+    if ! git checkout -b hotfix-master/$RELEASE release/$RELEASE; then
+        warn "checkout of release $RELEASE failed, does it exist?"
+        exit 1
+    fi
+    git checkout -b hotfix/$1
+    echo
+    echo "  When your hotfix is ready \`git hmflow hotfix push\` and request a peer"
+    echo "  reviewed merge from hotfix/$RELEASE into hotfix-master/$RELEASE."
+    echo
+    echo "  Once this is merged \`git hmflow hotfix pull\` to update your hotfix and"
+    echo "  \`git hmflow hotfix release-push <new-release>\` to tag"
+    echo "  the new release and push it."
+    echo
+    echo "  \`git hmflow hotfix finish\` to merge the changes into master and close"
+    echo "  the hotfix."
+    echo
+}
+
+push() {
+    [[ $# != 0 ]] && warn "push doesn't take any arguments" && exit 1
+    BRANCH=$(current_branch)
+    BRANCH_PREFIX=$(branch_prefix $BRANCH)
+    on_a_hotfix_branch_with_warn_for_action "push" || exit 1
+
+    REALEASE=$(branch_suffix $BRANCH)
+    MASTER_BRANCH="hotfix-master/$REALEASE"
+    git checkout $MASTER_BRANCH
+    git push $(current_branch_remote >/dev/null || echo "--set-upstream") origin $MASTER_BRANCH
+    git checkout $BRANCH
+    git push $(current_branch_remote >/dev/null || echo "--set-upstream") origin $BRANCH
+
+    #echo 
+    #echo "  visit https://github.tools.tax.service.gov.uk/tomvanneerijnen/hmflow/compare/hotfix-master%2F${HOTFIXING_REALEASE}...hotfix%2F${HOTFIXING_REALEASE}?expand=1"
+    #echo "============================"
+}
+
+pull() {
+    [[ $# != 0 ]] && warn "pull doesn't take any arguments" && exit 1
+    BRANCH=$(current_branch)
+    BRANCH_PREFIX=$(branch_prefix $BRANCH)
+    on_a_hotfix_branch_with_warn_for_action "push" || exit 1
+
+    REALEASE=$(branch_suffix $BRANCH)
+    MASTER_BRANCH="hotfix-master/$REALEASE"
+    git checkout $MASTER_BRANCH
+    git push $(current_branch_remote >/dev/null || echo "--set-upstream") origin $MASTER_BRANCH
+    git checkout $BRANCH
+    git push $(current_branch_remote >/dev/null || echo "--set-upstream") origin $BRANCH
+
+    #echo 
+    #echo "  visit https://github.tools.tax.service.gov.uk/tomvanneerijnen/hmflow/compare/hotfix-master%2F${HOTFIXING_REALEASE}...hotfix%2F${HOTFIXING_REALEASE}?expand=1"
+    #echo "============================"
+}
+
+checkout() {
+    git checkout hotfix/$1
+}
+
+finish() {
+    # Finished means merged into master
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD | grep "^hotfix/")
+
+    if [[ $BRANCH != "master" ]]; then
+        warn "you need to be on master to finish a hotfix"
+        exit 1
+    fi
+    if ! git branch -d hotfix/$1 2>/dev/null; then
+        warn "feature $1 hasn't been merged to master yet, can't finish"
+        exit 1
+    fi
+}
+
+cancel() {
+    [[ $# != 0 ]] && warn "cancel doesn't take any arguments" && exit 1
+    on_a_hotfix_branch_with_warn_for_action "cancel" || exit 1
+    BRANCH=$(current_branch)
+    RELEASE=$(branch_suffix $BRANCH)
+    git checkout master
+    git branch -D $BRANCH
+    git branch -D hotfix-master/$RELEASE
+}
+
+on_a_hotfix_branch_with_warn_for_action() {
+    ACTION=$1
+    BRANCH=$(current_branch)
+    BRANCH_PREFIX=$(branch_prefix $BRANCH)
+    [[ $BRANCH_PREFIX != "hotfix" ]] && warn "you need to be on a hotfix branch to $ACTION" && exit 1 || true
+}
+
+main() {
+    if [[ $# -lt 1 ]]; then
+        CMD=list
+    else
+        CMD=$1; shift
+    fi
+
+    $CMD $@
+}
+
+main "$@"
