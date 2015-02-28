@@ -30,7 +30,7 @@ git-flow was close but has too many branches for our taste and no peer review bu
   * hotfix-master/\<release name\> is merged back into master. Note this code has already been peer reviewed and so an additional peer review is only necessary if there is a merge conflict.
 
 
-# `git hmflow feature <command> [options]`
+## `git hmflow feature <command> [options]`
 
 * `git hmrcflow feature [list]`
 * `git hmrcflow feature start <feature-name>`
@@ -39,14 +39,14 @@ git-flow was close but has too many branches for our taste and no peer review bu
 * `git hmrcflow feature cancel`
 * `git hmrcflow feature finish`
 
-# `git hmflow release <command> [options]`
+## `git hmflow release <command> [options]`
 
 * `git hmrcflow release [list]`
 * `git hmrcflow release create <release-name>`
 * `git hmrcflow release push [<release-name>]`
 * `git hmrcflow release create-push <release-name>`
 
-# `git hmflow hotfix <command> [options]`
+## `git hmflow hotfix <command> [options]`
 
 * `git hmrcflow hotfix [list]`
 * `git hmrcflow hotfix start <release>`
