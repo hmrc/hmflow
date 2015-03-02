@@ -32,27 +32,27 @@ git-flow was close but has too many branches for our taste and no peer review bu
 
 ## `git hmflow feature <command> [options]`
 
-* `git hmrcflow feature [list]`
-* `git hmrcflow feature start <feature-name>`
-* `git hmrcflow feature push`
-* `git hmrcflow feature checkout <feature-name>`
-* `git hmrcflow feature cancel`
-* `git hmrcflow feature finish`
+* `git hmflow feature [list]`
+* `git hmflow feature start <feature-name>`
+* `git hmflow feature push`
+* `git hmflow feature checkout <feature-name>`
+* `git hmflow feature cancel`
+* `git hmflow feature finish`
 
 ## `git hmflow release <command> [options]`
 
-* `git hmrcflow release [list]`
-* `git hmrcflow release create <release-name>`
-* `git hmrcflow release push [<release-name>]`
-* `git hmrcflow release create-push <release-name>`
+* `git hmflow release [list]`
+* `git hmflow release create <release-name>`
+* `git hmflow release push [<release-name>]`
+* `git hmflow release create-push <release-name>`
 
 ## `git hmflow hotfix <command> [options]`
 
-* `git hmrcflow hotfix [list]`
-* `git hmrcflow hotfix start <release>`
-* `git hmrcflow hotfix push`
-* `git hmrcflow hotfix checkout <hotfix-name>`
-* `git hmrcflow hotfix cancel`
-* `git hmrcflow hotfix pull`
-* `git hmrcflow hotfix release <new-release>`
-* `git hmrcflow hotfix finish`
+* `git hmflow hotfix [list]`
+* `git hmflow hotfix start <release>`
+* `git hmflow hotfix push`
+* `git hmflow hotfix checkout <hotfix-name>`
+* `git hmflow hotfix cancel`
+* `git hmflow hotfix pull`
+* `git hmflow hotfix release <new-release>`
+* `git hmflow hotfix finish`
