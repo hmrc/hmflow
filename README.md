@@ -8,12 +8,11 @@ feature A  *-/---*   \
           / /     \   \   <=========== Peer review
 master >-*-*--+----*---*--------*-------->
               |\               /
-         release\ 1.0         /
+         release\ 1.0         / <===== Peer review
                  \           /
-hotfix-master     *---------+
-                   \       /|   <===== Peer review
-                    \ rele/ase 1.1 (hotfix for 1.0)
-hotfix               *---*
+hotfix 1.0        *---------+
+                            |
+                       release 1.1 (hotfix for 1.0)
 ```
 
 We required a branching model that allowed for releases, hotfixes to releases and peer reviews (currently via github pull requests but really any central repository would do).
@@ -24,12 +23,9 @@ git-flow was close but has too many branches for our taste and no peer review bu
 * Feature branches are branched off master to feature/\<feature name\>, worked on and peer reviewed before being merged back into master.
 * Releases are tagged as release/\<release name\> on master.
 * Hotfixes are
-  * branched from release tags to hotfix-master/\<release name\>
-  * branched from hotfix-master/\<release name\> to hotfix/\<release name\>
-  * worked on and peer reviewed before being merged back into hotfix-master/\<release name\>
-  * a release is taged as release/\<new release name\> on hotfix-master/\<release name\> but not pushed
-  * hotfix-master/\<release name\> is merged back into master. Note this code has already been peer reviewed and so an additional peer review is only necessary if there is a merge conflict.
-  * the updated master and new release tag is pushed to the remote repository
+  * branched off release tags to hotfix/\<release name\> and worked on
+  * peer reviewed before being merged back into master
+  * a release is then taged as release/\<new release name\> on hotfix/\<release name\>
 
 ## Working on features
 
@@ -64,32 +60,22 @@ git tag release/<release name> <commit id>
 
 ## Hotfixing a released bug
 
-Hotfixes MUST be branched from the release tag being hotfixed.
+A hotfixe MUST be branched from the release tag being hotfixed.
 
-Code merged into a hotfix-master branch MUST be peer reviewed.
+Code merged into master branch MUST be peer reviewed.
 
-hotfix-master MUST be merged to master before the release is taged and any fixed merge conflicts MUST be peer reviewed.
+The hotfix MUST be merged to master before the release is taged and any fixed merge conflicts MUST be peer reviewed.
 
-Branch hotfix-master/\<release name\> from release/\<release name\> and branch hotfix/\<release name\> from hotfix-master/\<release name\>:
+Branch hotfix/\<release name\> from release/\<release name\>:
 ```
-git checkout -b hotfix-master/<release name> release/<release name>
-git push -u origin hotfix-master/<release name>
-git checkout -b hotfix/<release name> hotfix-master/<release name>
+git checkout -b hotfix/<release name> release/<release name>
 git push -u origin hotfix/<release name>
 ```
 
-Once your hotfix is commited push to the remote repository and create a pull request from hotfix/<release name> into hotfix-master/<release name>.
+Once your hotfix is commited push to the remote repository and create a pull request from hotfix/<release name> into master
 
-Once that pull request is merged pull the updated hotfix-master/<release name>:
-```
-git checkout hotfix-master/<release name>
-git pull
-```
-
-Tag the new release and then merge to master, peer reviewing any resolved merge conflicts, then push master and the release tag:
+Once merged, tag the new release:
 ```
 git tag -a -m "release <new release name>" release/<new release name>
-git checkout master
-git merge --no-ff hotfix-master/<release name>
-git push --tags origin master
+git push --tags
 ```
